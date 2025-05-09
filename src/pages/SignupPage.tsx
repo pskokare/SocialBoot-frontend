@@ -25,7 +25,7 @@ function SignupPage() {
 
     setIsLoading(true);
     try {
-      const res = await fetch('https://socialboot-backend-bxt1.vercel.app/api/auth/register', {
+      const res = await fetch('https://socialboot-backend-iq4t.vercel.app/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })

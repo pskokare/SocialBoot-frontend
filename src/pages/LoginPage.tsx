@@ -19,7 +19,7 @@ function LoginPage() {
 
     try {
       // Send login request
-      const res = await fetch('https://socialboot-backend-bxt1.vercel.app/api/auth/login', {
+      const res = await fetch('https://socialboot-backend-iq4t.vercel.app/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
