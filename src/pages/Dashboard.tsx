@@ -6,7 +6,7 @@ import { useUser } from '../contexts/UserContext';
 import { useNotification } from '../contexts/NotificationContext';
 import Layout from '../components/layout/Layout';
 import TaskCard from '../components/tasks/TaskCard';
-import RewardBadge from '../components/rewards/RewardBadge';
+// import RewardBadge from '../components/rewards/RewardBadge';
 import TaskAssignmentModal from '../components/tasks/TaskAssignmentModal';
 import { Camera, Users, Award, TrendingUp, User } from 'lucide-react';
 
@@ -59,13 +59,13 @@ function Dashboard() {
       bgColor: 'bg-purple-50',
       textColor: 'text-purple-700'
     },
-    { 
-      title: 'Engagement', 
-      value: '72%', 
-      icon: <TrendingUp className="h-8 w-8 text-green-500" />,
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-700'
-    }
+    // { 
+    //   title: 'Engagement', 
+    //   value: '72%', 
+    //   icon: <TrendingUp className="h-8 w-8 text-green-500" />,
+    //   bgColor: 'bg-green-50',
+    //   textColor: 'text-green-700'
+    // }
   ];
 
   return (

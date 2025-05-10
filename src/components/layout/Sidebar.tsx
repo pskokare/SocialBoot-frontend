@@ -10,11 +10,14 @@ function Sidebar({ closeSidebar }: SidebarProps) {
   
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Social Profiles', href: '/socialprofiles', icon: Home },
     { name: 'Upload Reels', href: '/upload', icon: Upload },
     { name: 'Find Followers', href: '/followers', icon: Users },
+    {name : 'AiTools', href: '/aitools', icon: Users},
     { name: 'My Profile', href: '/profile', icon: User },
-    { name: 'Rewards', href: '/rewards', icon: Award },
-    { name: 'Settings', href: '/settings', icon: Settings },
+
+    // { name: 'Rewards', href: '/rewards', icon: Award },
+    // { name: 'Settings', href: '/settings', icon: Settings },
   ];
   
   return (
@@ -69,14 +72,14 @@ function Sidebar({ closeSidebar }: SidebarProps) {
             <div className="h-9 w-9 rounded-full bg-purple-200 flex items-center justify-center">
               <User className="h-5 w-5 text-purple-600" />
             </div>
-            <div className="ml-3">
+            {/* <div className="ml-3">
               <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
                 User Name
               </p>
               <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
                 View profile
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
@@ -34,18 +35,21 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  
+
   useEffect(() => {
-    // Check for saved user in localStorage on init
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser && savedUser !== 'undefined') {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      }
+    } catch (err) {
+      console.error('Failed to parse user from localStorage:', err);
+      localStorage.removeItem('user');
     }
   }, []);
-  
+
   const login = async (email: string, password: string) => {
-    // This would be an API call in a real app
-    // For demo, we'll simulate a successful login with mock user data
     return new Promise<void>((resolve, reject) => {
       setTimeout(() => {
         if (email && password) {
@@ -58,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             website: 'https://example.com',
             avatar: null,
           };
-          
+
           setUser(mockUser);
           localStorage.setItem('user', JSON.stringify(mockUser));
           resolve();
@@ -68,9 +72,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }, 800);
     });
   };
-  
+
   const signup = async (name: string, email: string, password: string) => {
-    // This would be an API call in a real app
     return new Promise<void>((resolve, reject) => {
       setTimeout(() => {
         if (name && email && password) {
@@ -83,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             website: '',
             avatar: null,
           };
-          
+
           setUser(mockUser);
           localStorage.setItem('user', JSON.stringify(mockUser));
           resolve();
@@ -93,12 +96,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }, 800);
     });
   };
-  
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
   };
-  
+
   const updateUserProfile = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
@@ -106,7 +109,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem('user', JSON.stringify(updatedUser));
     }
   };
-  
+
   const value = {
     user,
     login,
@@ -114,6 +117,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     updateUserProfile,
   };
-  
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

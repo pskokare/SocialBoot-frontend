@@ -1,65 +1,145 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import Button from '../components/ui/Button';
 import InputField from '../components/ui/InputField';
+import { useNavigate } from 'react-router-dom';
 
-function LoginPage() {
+interface LoginModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void; // Optional callback for successful login
+}
+
+export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState(''); // For Signup
+  const [confirmPassword, setConfirmPassword] = useState(''); // For Signup
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true); // Track whether the modal is for login or signup
+  const navigate = useNavigate();  // Hook for navigation
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Inside the component
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setName('');
+    setConfirmPassword('');
+    setError('');
+    setIsLogin(true); // Optional: reset to login mode
+  };
+
+  // Reset form every time modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');  // Clear any previous errors
-    setIsLoading(true);  // Start loading
-
+    setError('');
+    setIsLoading(true);
     try {
-      // Send login request
-      const res = await fetch('https://social-boot.onrender.com/api/auth/login', {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Login failed');
 
-      // Check if the response was successful
-      if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      // Store token in localStorage
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Navigate to the dashboard after successful login
-      navigate('/dashboard');
+      onSuccess?.();
+      resetForm(); // <- Reset only on success
+      onClose();
     } catch (err: any) {
-      // Handle any errors during the login process
       setError(err.message);
     } finally {
-      setIsLoading(false);  // Stop loading
+      setIsLoading(false);
     }
   };
 
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Signup failed');
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      resetForm();       // <- Reset only on success
+      setIsLogin(true);  // Stay in modal, switch to login view
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Modify onClose to also optionally reset
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-600 p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Welcome Back</h1>
+    <div className="fixed inset-0 bg-gradient-to-b bg-black/50 to-transparent backdrop-blur-md flex items-center justify-center z-50">
+      <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-xl relative">
+        <button
+          onClick={handleClose}
+          className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-lg"
+        >
+          ✕
+        </button>
 
-        {/* Show error message if any */}
-        {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
+        <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
+          {isLogin ? 'Welcome Back' : 'Create Account'}
+        </h2>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {error && <div className="text-red-600 text-sm mb-3">{error}</div>}
+
+        <form
+          onSubmit={isLogin ? handleLoginSubmit : handleSignupSubmit}
+          className="space-y-4"
+        >
+          {/* Signup Fields */}
+          {!isLogin && (
+            <InputField
+              label="Full Name"
+              type="text"
+              value={name}
+              placeholder="Enter your full name"
+              onChange={(e) => setName(e.target.value)}
+              required
+              icon={<User size={18} />}
+            />
+          )}
+
           <InputField
             label="Email"
             type="email"
             value={email}
-            placeholder='Enter Email'
+            placeholder="Enter your email"
             onChange={(e) => setEmail(e.target.value)}
             required
             icon={<Mail size={18} />}
@@ -70,7 +150,7 @@ function LoginPage() {
               label="Password"
               type={showPassword ? 'text' : 'password'}
               value={password}
-              placeholder='Enter Password'
+              placeholder="Enter your password"
               onChange={(e) => setPassword(e.target.value)}
               required
               icon={<Lock size={18} />}
@@ -84,21 +164,44 @@ function LoginPage() {
             </button>
           </div>
 
-          {/* Submit Button */}
-          <Button type="submit" fullWidth isLoading={isLoading}>
-            Sign In
-          </Button>
+          {/* Confirm Password Field (Only for Signup) */}
+          {!isLogin && (
+            <div className="relative">
+              <InputField
+                label="Confirm Password"
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                placeholder="Confirm your password"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                icon={<Lock size={18} />}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-9 right-3"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          )}
 
-          <p className="text-sm text-center text-gray-600 mt-4">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-purple-600 hover:underline">
-              Sign up
-            </Link>
-          </p>
+          <Button type="submit" fullWidth isLoading={isLoading}>
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </Button>
         </form>
+
+        <div className="text-center mt-4">
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-blue-500 hover:underline"
+          >
+            {isLogin
+              ? 'Don’t have an account? Sign up'
+              : 'Already have an account? Sign in'}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
-
-export default LoginPage;
